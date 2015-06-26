@@ -37,7 +37,7 @@ class Crawler
   end
   
   def filename2path (filename)
-    File.expand_path(filename.to_s, post_path)
+    File.expand_path("#{filename}.html", post_path)
   end
   
   def get_tid(json)
@@ -55,6 +55,8 @@ class Crawler
     tid = json['id'].to_s
     title = json['title'].to_s
     content = json['text'].to_s
+    
+    puts "#{tid}:#{content}"
 
     quote_content = ""
     retweet = json['retweeted_status']
@@ -76,35 +78,35 @@ class Crawler
     return html_content
   end
   
-  def grab(arg)
-    begin
-      response = RestClient.get 'https://api.xueqiu.com/statuses/show.json',
-                  {:params => {
-                      'access_token' => @access_token,
-                      'id' => arg}}
-        
-      puts "Get post #{response.code}"
-      case response.code
-      when 200
-        json = JSON.parse response
-        html_content = make_content(json)
-      end
-    rescue => e
-      puts "Get post failed: #{e.inspect}"
-
-      refresh_token if e.response.code == 400 && JSON.parse(e.response)['error_code'] == "400016"
-    end
-    
-    # Parse post json
-    if html_content
-      puts "Save post #{arg}"
-      File.open(File.expand_path("#{arg}.html", post_path), 'w') do |f|
-          f.write(json)
-      end
-    else
-      puts "Post #{arg} cannot parese json"
-    end
-  end
+#   def grab(arg)
+#     begin
+#       response = RestClient.get 'https://api.xueqiu.com/statuses/show.json',
+#                   {:params => {
+#                       'access_token' => @access_token,
+#                       'id' => arg}}
+#
+#       puts "Get post #{response.code}"
+#       case response.code
+#       when 200
+#         json = JSON.parse response
+#         html_content = make_content(json)
+#       end
+#     rescue => e
+#       puts "Get post failed: #{e.inspect}"
+#
+#       refresh_token if e.response.code == 400 && JSON.parse(e.response)['error_code'] == "400016"
+#     end
+#
+#     # Parse post json
+#     if html_content
+#       puts "Save post #{arg}"
+#       File.open(File.expand_path("#{arg}.html", post_path), 'w') do |f|
+#           f.write(json)
+#       end
+#     else
+#       puts "Post #{arg} cannot parese json"
+#     end
+#   end
   
   def parse(json, tid)
     html_content = make_content(json)
@@ -112,8 +114,8 @@ class Crawler
     # Parse post json
     if html_content
       puts "Save post #{tid}"
-      File.open(File.expand_path("#{tid}.html", post_path), 'w') do |f|
-          f.write(json)
+      File.open(filename2path(tid), 'w') do |f|
+          f.write(html_content)
       end
     else
       puts "Post #{tid} cannot parese json"
@@ -123,33 +125,36 @@ class Crawler
   def fetch()        
     begin
       params = {'access_token' => @access_token,
-                      'count' => 20,
+                      'count' => 2,
                       'user_id' => @aid}
       if @last_tid
         params['max_id'] = (@last_tid.to_i - 1).to_s
       end
 
       response = RestClient.get 'https://xueqiu.com/v4/statuses/user_timeline.json',
-                  {:params => params}
+                  {:params => params,
+                  'Content-Encoding ' => "gzip"}
                     
       puts "Get post list #{response.code}"
       case response.code
       when 200
         rep = JSON.parse response
-        posts = get_tid(rep)
-
-        posts.each do |tid|
-          # Get post json
-          if File.exist?(filename2path(tid))
-            puts "Post #{tid} are exist"
-          else
-            # not exist
-            # grab(tid)
-            parse(rep, tid)
+        
+        rep['statuses'].each do |post|
+          if post
+            tid = post['id']
+            # Saved post
+            if File.exist?(filename2path(tid))
+              puts "Post #{tid} are exist"
+            else
+              # not exist
+              # grab(tid)
+              # parse(post, tid)
+            end
           end
         end
         
-        fetch if post.count > 1
+        fetch if posts.count > 1
       end
     rescue => e
       puts "Get post list failed: #{e.inspect}"
