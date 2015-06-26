@@ -62,7 +62,7 @@ class Crawler
     retweet = json['retweeted_status']
     if retweet
       retweet_title = json['retweeted_status']['title'].to_s
-      retweet_content = json['retweeted_status']['description'].to_s
+      retweet_content = json['retweeted_status']['text'].to_s
       
       quote_content = "<h3>#{retweet_title}</h3><p>#{retweet_content}</p>"
     end
@@ -78,36 +78,37 @@ class Crawler
     return html_content
   end
   
-#   def grab(arg)
-#     begin
-#       response = RestClient.get 'https://api.xueqiu.com/statuses/show.json',
-#                   {:params => {
-#                       'access_token' => @access_token,
-#                       'id' => arg}}
-#
-#       puts "Get post #{response.code}"
-#       case response.code
-#       when 200
-#         json = JSON.parse response
-#         html_content = make_content(json)
-#       end
-#     rescue => e
-#       puts "Get post failed: #{e.inspect}"
-#
-#       refresh_token if e.response.code == 400 && JSON.parse(e.response)['error_code'] == "400016"
-#     end
-#
-#     # Parse post json
-#     if html_content
-#       puts "Save post #{arg}"
-#       File.open(File.expand_path("#{arg}.html", post_path), 'w') do |f|
-#           f.write(json)
-#       end
-#     else
-#       puts "Post #{arg} cannot parese json"
-#     end
-#   end
+  def grab(arg)
+    begin
+      response = RestClient.get 'https://api.xueqiu.com/statuses/show.json',
+                  {:params => {
+                      'access_token' => @access_token,
+                      'id' => arg}}
+
+      puts "Get post #{response.code}"
+      case response.code
+      when 200
+        json = JSON.parse response
+        html_content = make_content(json)
+      end
+    rescue => e
+      puts "Get post failed: #{e.inspect}"
+
+      refresh_token if e.response.code == 400 && JSON.parse(e.response)['error_code'] == "400016"
+    end
+
+    # Parse post json
+    if html_content
+      puts "Save post #{arg}"
+      File.open(filename2path(arg), 'w') do |f|
+          f.write(html_content)
+      end
+    else
+      puts "Post #{arg} cannot parese json"
+    end
+  end
   
+=begin
   def parse(json, tid)
     html_content = make_content(json)
     
@@ -121,25 +122,37 @@ class Crawler
       puts "Post #{tid} cannot parese json"
     end
   end
+=end
   
   def fetch()        
     begin
       params = {'access_token' => @access_token,
-                      'count' => 2,
+                      'count' => 20,
                       'user_id' => @aid}
       if @last_tid
         params['max_id'] = (@last_tid.to_i - 1).to_s
       end
 
       response = RestClient.get 'https://xueqiu.com/v4/statuses/user_timeline.json',
-                  {:params => params,
-                  'Content-Encoding ' => "gzip"}
+                  {:params => params}
                     
       puts "Get post list #{response.code}"
       case response.code
       when 200
         rep = JSON.parse response
+        posts = get_tid(rep)
         
+        posts.each do |tid|
+          # Get post json
+          if File.exist?(filename2path(tid))
+            puts "Post #{tid} are exist"
+          else
+            # not exist
+            grab(tid)
+          end
+          @last_tid = tid.to_s
+        end
+
         rep['statuses'].each do |post|
           if post
             tid = post['id']
