@@ -56,8 +56,6 @@ class Crawler
     title = json['title'].to_s
     content = json['text'].to_s
     
-    puts "#{tid}:#{content}"
-
     quote_content = ""
     retweet = json['retweeted_status']
     if retweet
@@ -167,6 +165,7 @@ class Crawler
           end
         end
         
+        sleep(60)
         fetch if posts.count > 1
       end
     rescue => e
