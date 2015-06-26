@@ -5,7 +5,7 @@ require 'json'
 require 'fileutils'
 
 class Crawler
-  attr_accessors: aid
+  attr_accessor :aid
   
   ACCESS_TOKEN_PATH = File.expand_path("access_token", File.dirname(__FILE__))
   
@@ -98,17 +98,25 @@ class Crawler
     # Parse post json
     if html_content
       puts "Save post #{arg}"
-      File.open(File.expand_path(arg.to_s, post_path), 'w') do |f|
+      File.open(File.expand_path("#{arg}.html", post_path), 'w') do |f|
           f.write(json)
-      end
-
-      begin
-        send_content("炒的是心 (#{arg.to_s})", html_content)
-      rescue => e
-        puts "Send failed: #{e.inspect}"
       end
     else
       puts "Post #{arg} cannot parese json"
+    end
+  end
+  
+  def parse(json, tid)
+    html_content = make_content(json)
+    
+    # Parse post json
+    if html_content
+      puts "Save post #{tid}"
+      File.open(File.expand_path("#{tid}.html", post_path), 'w') do |f|
+          f.write(json)
+      end
+    else
+      puts "Post #{tid} cannot parese json"
     end
   end
   
@@ -128,34 +136,36 @@ class Crawler
       case response.code
       when 200
         rep = JSON.parse response
-        stats = get_tid(rep)
+        posts = get_tid(rep)
 
-        stats.each do |tid|
+        posts.each do |tid|
           # Get post json
           if File.exist?(filename2path(tid))
             puts "Post #{tid} are exist"
           else
             # not exist
-            grab(tid)
+            # grab(tid)
+            parse(rep, tid)
           end
         end
         
-        File.open(local_path, 'w') do |f|
-            f.write(last_online)
-        end
+        fetch if post.count > 1
       end
     rescue => e
       puts "Get post list failed: #{e.inspect}"
   
       refresh_token if e.response.code == 400 && JSON.parse(e.response)['error_code'] == "400016"
+      
+      fetch
     end
+  end
 end
 
 
 if ARGV.count == 1
   c = Crawler.new
   c.aid = ARGV.first
-  c.fetch()
+  c.fetch
 else
   puts "Wrong argument"
 end
