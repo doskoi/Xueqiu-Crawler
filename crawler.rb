@@ -3,10 +3,12 @@ require 'bundler/setup'
 require 'rest-client'
 require 'json'
 require 'fileutils'
+require 'date'
 
 class Crawler
   attr_accessor :aid
   
+  FETCH_COUNT = 20
   ACCESS_TOKEN_PATH = File.expand_path("access_token", File.dirname(__FILE__))
   
   def initialize
@@ -55,6 +57,7 @@ class Crawler
     tid = json['id'].to_s
     title = json['title'].to_s
     content = json['text'].to_s
+    create_at = DateTime.strptime(json['created_at'].to_s, '%Q').strftime("%Y-%m-%d %H:%M:%S")
     
     quote_content = ""
     retweet = json['retweeted_status']
@@ -70,6 +73,7 @@ class Crawler
     	<h2>#{title}</h2>
     	<p>#{content}</p>
     	<blockquote style=\"border-left: 4px lightgrey solid;padding-left: 5px;margin-left: 20px;\">#{quote_content}</blockquote>
+      <span>#{create_at}</span>
     	<h4><p><a href=\"http://xueqiu.com/_/#{tid}\">原文链接</a></p></h4>
     </html>
     "
@@ -125,10 +129,10 @@ class Crawler
   def fetch()        
     begin
       params = {'access_token' => @access_token,
-                      'count' => 20,
+                      'count' => FETCH_COUNT,
                       'user_id' => @aid}
-      if @last_tid
-        params['max_id'] = (@last_tid.to_i - 1).to_s
+      if (@last_tid && @last_tid > 0)
+        params['max_id'] = (@last_tid - 1).to_s
       end
 
       response = RestClient.get 'https://xueqiu.com/v4/statuses/user_timeline.json',
@@ -148,25 +152,10 @@ class Crawler
             # not exist
             grab(tid)
           end
-          @last_tid = tid.to_s
+          @last_tid = tid
         end
 
-        rep['statuses'].each do |post|
-          if post
-            tid = post['id']
-            # Saved post
-            if File.exist?(filename2path(tid))
-              puts "Post #{tid} are exist"
-            else
-              # not exist
-              # grab(tid)
-              # parse(post, tid)
-            end
-          end
-        end
-        
-        sleep(60)
-        fetch if posts.count > 1
+        return posts.count
       end
     rescue => e
       puts "Get post list failed: #{e.inspect}"
@@ -176,13 +165,19 @@ class Crawler
       fetch
     end
   end
+  
+  def party
+    while fetch = FETCH_COUNT
+      puts "---------------"
+    end
+  end
 end
 
 
 if ARGV.count == 1
   c = Crawler.new
   c.aid = ARGV.first
-  c.fetch
+  c.party
 else
   puts "Wrong argument"
 end
