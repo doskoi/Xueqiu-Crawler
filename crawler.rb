@@ -68,15 +68,19 @@ class Crawler
       quote_content = "<h3>#{retweet_title}</h3><p>#{retweet_content}</p>"
     end
     
-    html_content = "
-    <html>
-    	<h2>#{title}</h2>
-    	<p>#{content}</p>
-    	<blockquote style=\"border-left: 4px lightgrey solid;padding-left: 5px;margin-left: 20px;\">#{quote_content}</blockquote>
-      <span>#{create_at}</span>
-    	<h4><p><a href=\"http://xueqiu.com/_/#{tid}\">原文链接</a></p></h4>
-    </html>
-    "
+    html_content = "<html>
+<head>
+	<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">
+	<title>#{title}</title>
+</head>
+<body>
+	<h2>#{title}</h2>
+	<p>#{content}</p>
+	<blockquote style=\"border-left: 4px lightgrey solid;padding-left: 5px;margin-left: 20px;\">#{quote_content}</blockquote>
+  <span>#{create_at}</span>
+	<h4><p><a href=\"http://xueqiu.com/_/#{tid}\">原文链接</a></p></h4>
+  </body>
+</html>"
     return html_content
   end
   
