@@ -173,7 +173,7 @@ class Crawler
   end
   
   def party
-    while fetch > 1
+    while fetch > 0
       puts "---------------"
     end
     
