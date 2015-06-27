@@ -4,6 +4,7 @@ require 'rest-client'
 require 'json'
 require 'fileutils'
 require 'date'
+require_relative 'pdfmaker'
 
 class Crawler
   attr_accessor :aid
@@ -172,9 +173,15 @@ class Crawler
   end
   
   def party
-    while fetch = FETCH_COUNT
+    while fetch > 1
       puts "---------------"
     end
+    
+    puts "Start convert PDF"
+    
+    maker = PDFMaker.new
+    maker.aid = @aid
+    maker.convert
   end
 end
 

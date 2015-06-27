@@ -3,7 +3,7 @@ require 'bundler/setup'
 require 'fileutils'
 require 'pdfkit'
 
-class Maker
+class PDFMaker
   attr_accessor :aid
   
   def initialize
@@ -14,9 +14,11 @@ class Maker
     FileUtils.mkdir_p path
     return path
   end
-
-  def filename2path (filename)
-    File.expand_path("#{filename}.html", post_path)
+  
+  def save_path
+    path = File.expand_path("posts/#{@aid}/PDF", File.dirname(__FILE__))
+    FileUtils.mkdir_p path
+    return path
   end
   
   def convert
@@ -31,7 +33,8 @@ class Maker
           
           kit = PDFKit.new(html_content)
           save_name = File.basename file, '.html'
-          kit.to_file(File.expand_path("#{save_name}.pdf", post_path))
+          kit.to_file(File.expand_path("#{save_name}.pdf", save_path))
+          puts "Saving PDF #{save_name}"
         end
       end
     end
@@ -39,7 +42,7 @@ class Maker
 end
 
 if ARGV.count == 1
-  m = Maker.new
+  m = PDFMaker.new
   m.aid = ARGV.first
   m.convert
 else
