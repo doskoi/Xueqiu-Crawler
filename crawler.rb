@@ -65,7 +65,7 @@ class Crawler
     if retweet
       retweet_title = json['retweeted_status']['title'].to_s
       retweet_content = json['retweeted_status']['text'].to_s
-      
+      retweet_content.gsub!(/!custom.jpg/) {""}
       quote_content = "<h3>#{retweet_title}</h3><p>#{retweet_content}</p>"
     end
     
