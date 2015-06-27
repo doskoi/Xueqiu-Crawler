@@ -57,6 +57,7 @@ class Crawler
     tid = json['id'].to_s
     title = json['title'].to_s
     content = json['text'].to_s
+    content.gsub!(/!custom.jpg/) {""}
     create_at = DateTime.strptime(json['created_at'].to_s, '%Q').strftime("%Y-%m-%d %H:%M:%S")
     
     quote_content = ""
