@@ -8,6 +8,7 @@ GEM
     json (1.8.3)
     mime-types (2.6.1)
     netrc (0.10.3)
+    pdfkit (0.7.0)
     rest-client (1.8.0)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
@@ -21,4 +22,5 @@ PLATFORMS
 
 DEPENDENCIES
   json
+  pdfkit
   rest-client
