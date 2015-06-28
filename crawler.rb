@@ -4,10 +4,9 @@ require 'rest-client'
 require 'json'
 require 'fileutils'
 require 'date'
-require_relative 'pdfmaker'
 
 class Crawler
-  attr_accessor :aid
+  attr_accessor :aid, :author
   
   FETCH_COUNT = 20
   ACCESS_TOKEN_PATH = File.expand_path("access_token", File.dirname(__FILE__))
@@ -148,6 +147,8 @@ class Crawler
       case response.code
       when 200
         rep = JSON.parse response
+        @author = rep['statuses'][0]['user']['screen_name'] if !@author
+        
         posts = get_tid(rep)
         
         posts.each do |tid|
@@ -171,25 +172,4 @@ class Crawler
       fetch
     end
   end
-  
-  def party
-    while fetch > 0
-      puts "---------------"
-    end
-    
-    puts "Start convert PDF"
-    
-    maker = PDFMaker.new
-    maker.aid = @aid
-    maker.convert
-  end
-end
-
-
-if ARGV.count == 1
-  c = Crawler.new
-  c.aid = ARGV.first
-  c.party
-else
-  puts "Wrong argument"
 end

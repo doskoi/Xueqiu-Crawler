@@ -1,6 +1,8 @@
 GEM
   remote: https://ruby.taobao.org/
   specs:
+    combine_pdf (0.2.2)
+      ruby-rc4 (>= 0.1.5)
     domain_name (0.5.24)
       unf (>= 0.0.5, < 1.0.0)
     http-cookie (1.0.2)
@@ -13,6 +15,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 3.0)
       netrc (~> 0.7)
+    ruby-rc4 (0.1.5)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.1)
@@ -21,6 +24,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  combine_pdf
   json
   pdfkit
   rest-client

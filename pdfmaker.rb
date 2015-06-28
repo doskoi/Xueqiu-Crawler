@@ -2,9 +2,10 @@
 require 'bundler/setup'
 require 'fileutils'
 require 'pdfkit'
+require 'combine_pdf'
 
 class PDFMaker
-  attr_accessor :aid
+  attr_accessor :aid, :author
   
   def initialize
   end
@@ -21,30 +22,121 @@ class PDFMaker
     return path
   end
   
-  def convert
-    if File.directory?(post_path)
-      files = Array.new
-      
-      Dir.foreach(post_path) do |file|
-        if File.extname(file) == '.html'
+  def make_cover
+    content = "<html>
+    <head>
+    <meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">
+    <title></title>
+    <style type=\"text/css\" media=\"all\">
+    #createAt
+    {
+        position: absolute;
+        left: 498px;
+        width: 231px;
+        top: 32px;
+        height: 31px;
+        background: none;
+        border: none;
+        font-size: 16px;
+        text-align: right;
+        font-family: AdobeFangsongStd-Regular;
+        color: rgb(0, 0, 0);
+    }
+    #author
+    {
+        position: absolute;
+        left: 34px;
+        width: 700px;
+        top: 340px;
+        height: 131px;
+        background: none;
+        border: none;
+        font-size: 128px;
+        text-align: center;
+        font-family: AdobeFangsongStd-Regular;
+        color: rgb(0, 0, 0);
+    }
+    #footer
+    {
+        position: absolute;
+        left: 33px;
+        width: 701px;
+        top: 988px;
+        height: 28px;
+        background: none;
+        border: none;
+        font-size: 16px;
+        text-align: left;
+        font-family: AdobeFangsongStd-Regular;
+        color: rgb(0, 0, 0);
+    }
+    #publisher
+    {
+    	color: #000;
+    }
+    </style>
+    <meta charset=\"UTF-8\">
+    </head>
+
+    <body>
+        <div id=\"createAt\">
+        截止于#{Time.now.strftime("%Y年%m月%d日")}
+        </div>
+        <div id=\"author\">
+        #{@author}
+        </div>
+        <div id=\"footer\">
+        <a href=\"http://xueqiu.com/6023636062\" class  id=\"publisher\">DireWolf</a>出版，仅供学习交流，文章版权归原作者所有，非原作者授权禁止用于任何商业用途。
+        </div>
+    </body>
+
+    </html>
+    "
+
+    kit = PDFKit.new(content, :page_size => 'A4')
+    kit.to_file(File.expand_path("00000001.pdf", save_path))
+  end
+  
+  def convert_html
+    Dir.foreach(post_path) do |file|
+      if File.extname(file) == '.html'
+        save_name = File.basename file, '.html'
+        pdf_path = File.expand_path("#{save_name}.pdf", save_path)
+        
+        if File.exist?(pdf_path)
+          puts "PDF #{save_name} are exist"
+        else
           file_path = File.join(post_path, file)
           html_content = File.read(file_path)
           html_content.scrub!
-          
-          kit = PDFKit.new(html_content)
-          save_name = File.basename file, '.html'
-          kit.to_file(File.expand_path("#{save_name}.pdf", save_path))
+        
+          kit = PDFKit.new(html_content, :page_size => 'A4')
+          kit.to_file(pdf_path)
           puts "Saving PDF #{save_name}"
         end
       end
     end
   end
-end
+  
+  def combine
+    puts "Combining PDFs"
+    pdf = CombinePDF.new
+    
+    Dir.foreach(save_path) do |file|
+      if File.extname(file) == '.pdf'
+        file_path = File.join(save_path, file)
+        pdf << CombinePDF.load(file_path)
+      end
+    end
+    
+    pdf.save(File.expand_path("posts/#{@author}.pdf", File.dirname(__FILE__)))
+  end
 
-if ARGV.count == 1
-  m = PDFMaker.new
-  m.aid = ARGV.first
-  m.convert
-else
-  puts "Wrong argument"
+  def convert
+    if File.directory?(post_path)
+      make_cover
+      convert_html
+      combine
+    end
+  end
 end
