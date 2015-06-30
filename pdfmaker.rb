@@ -92,12 +92,32 @@ class PDFMaker
 
     </html>
     "
-
+    pdf_path = File.expand_path("00000001.pdf", save_path)
     kit = PDFKit.new(content, :page_size => 'A4')
-    kit.to_file(File.expand_path("00000001.pdf", save_path))
+    kit.to_file(pdf_path)
+    pdf_path
   end
   
-  def convert_html
+  def convert_html(arg)
+    html_path = File.expand_path("#{arg}.html", post_path)
+    
+    pdf_path = File.expand_path("#{arg}.pdf", save_path)
+    
+    if File.exist?(pdf_path)
+      puts "PDF #{pdf_path} are exist"
+    else
+      html_content = File.read(html_path)
+      html_content.scrub!
+    
+      kit = PDFKit.new(html_content, :page_size => 'A4')
+      kit.to_file(pdf_path)
+      puts "Saving PDF #{pdf_path}"
+    end
+    pdf_path
+  end
+
+  
+  def convert_htmls
     Dir.foreach(post_path) do |file|
       if File.extname(file) == '.html'
         save_name = File.basename file, '.html'
@@ -118,6 +138,18 @@ class PDFMaker
     end
   end
   
+  def combine_single(pdfs)
+    puts "Combining PDFs"
+    pdf = CombinePDF.new
+    
+    pdfs.each do |file|
+      pdf << CombinePDF.load(file)
+    end
+    
+    pdf.save(File.expand_path("posts/#{@author}_#{@single}.pdf", File.dirname(__FILE__)))
+  end
+
+  
   def combine
     puts "Combining PDFs"
     pdf = CombinePDF.new
@@ -128,15 +160,25 @@ class PDFMaker
         pdf << CombinePDF.load(file_path)
       end
     end
-    
+    # pdf.number_pages
     pdf.save(File.expand_path("posts/#{@author}.pdf", File.dirname(__FILE__)))
   end
 
   def convert
     if File.directory?(post_path)
       make_cover
-      convert_html
+      convert_htmls
       combine
     end
   end
+  
+  def convert_single(arg)
+    @single = arg
+    if File.directory?(post_path)
+      pdf_cover = make_cover
+      pdf_content = convert_html(arg)
+      combine_single([pdf_cover, pdf_content])
+    end
+  end
+
 end

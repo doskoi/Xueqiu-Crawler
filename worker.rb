@@ -3,19 +3,34 @@ require_relative 'crawler'
 require_relative 'pdfmaker'
 
 if ARGV.count == 1
-  crawler = Crawler.new
-  crawler.aid = ARGV.first
+  # Whole
+  if (ARGV.first.include? "/")
+    args = ARGV.first.split("\/")
+    crawler = Crawler.new
+    crawler.aid = args[0]
+    crawler.grab(args[1])
+    
+    puts "Start convert PDF"
+    
+    maker = PDFMaker.new
+    maker.aid = crawler.aid
+    maker.author = crawler.author
+    maker.convert_single(args[1])
+  else
+    crawler = Crawler.new
+    crawler.aid = ARGV.first
 
-  while crawler.fetch > 0
-    puts "---------------"
+    while crawler.fetch > 0
+      puts "---------------"
+    end
+  
+    puts "Start convert PDF"
+  
+    maker = PDFMaker.new
+    maker.aid = crawler.aid
+    maker.author = crawler.author
+    maker.convert
   end
-  
-  puts "Start convert PDF"
-  
-  maker = PDFMaker.new
-  maker.aid = crawler.aid
-  maker.author = crawler.author
-  maker.convert
 else
   puts "Wrong argument"
 end

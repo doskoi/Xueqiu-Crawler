@@ -54,6 +54,7 @@ class Crawler
   end
   
   def make_content(json)
+    @author = json['user']['screen_name'] if !@author
     tid = json['id'].to_s
     title = json['title'].to_s
     content = json['text'].to_s
@@ -73,11 +74,62 @@ class Crawler
 <head>
 	<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">
 	<title>#{title}</title>
+	<style type=\"text/css\" media=\"all\">
+		body {
+			font-family: \"SimSun\", \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+			font-size: 18px;
+		}
+		img {
+			max-width: 768px; 
+		}
+		H1 {
+		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+		}
+
+		H2 {
+		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+		    margin-bottom: 60px;
+		    margin-bottom: 40px;
+		    padding: 5px;
+		    border-bottom: 1px LightGrey solid;
+		    width: 90%;
+		    line-height: 150%;
+		}
+
+		H3 {
+		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+		    margin-top: 40px;
+		    margin-bottom: 30px;
+		    border-bottom: 1px LightGrey solid;
+		    width: 80%;
+		    line-height: 150%;
+		}
+
+		H4 {
+		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+		}
+    
+		H5 {
+		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+		}
+
+		li {
+		    margin-left: 10px;
+		}
+		blockquote {
+			border-left: 4px lightgrey solid;
+			padding-left: 5px;
+			margin-left: 20px;
+		}
+		a {
+			color: #000;
+		}
+	</style>
 </head>
 <body>
 	<h2>#{title}</h2>
 	<p>#{content}</p>
-	<blockquote style=\"border-left: 4px lightgrey solid;padding-left: 5px;margin-left: 20px;\">#{quote_content}</blockquote>
+	<blockquote>#{quote_content}</blockquote>
   <span>#{create_at}</span>
 	<h4><p><a href=\"http://xueqiu.com/_/#{tid}\">原文链接</a></p></h4>
   </body>
