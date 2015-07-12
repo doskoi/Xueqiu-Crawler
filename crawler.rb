@@ -4,32 +4,16 @@ require 'rest-client'
 require 'json'
 require 'fileutils'
 require 'date'
+require_relative 'xueqiu'
 
 class Crawler
   attr_accessor :aid, :author
   
   FETCH_COUNT = 20
-  ACCESS_TOKEN_PATH = File.expand_path("access_token", File.dirname(__FILE__))
-  
-  def initialize
-    if File.exist? ACCESS_TOKEN_PATH
-      @access_token = File.read ACCESS_TOKEN_PATH
-    end
-  end
-  
-  def refresh_token
-    access_token_response = RestClient.post 'https://xueqiu.com/provider/oauth/token',
-    'client_id' => 'WiCimxpj5H',
-    'client_secret' => 'TM69Da3uPkFzIdxpTEm6hp',
-    'grant_type' => 'password'
 
-    json = JSON.parse access_token_response
-    @access_token = json['access_token']
-    if @access_token
-      File.open(ACCESS_TOKEN_PATH, 'w') do |f|
-          f.write(@access_token)
-      end
-    end
+  def initialize
+    x = XueqiuEngine.new
+    @access_token = x.token
   end
   
   def post_path
@@ -152,8 +136,6 @@ class Crawler
       end
     rescue => e
       puts "Get post failed: #{e.inspect}"
-
-      refresh_token if e.response.code == 400 && JSON.parse(e.response)['error_code'] == "400016"
     end
 
     # Parse post json
@@ -218,10 +200,6 @@ class Crawler
       end
     rescue => e
       puts "Get post list failed: #{e.inspect}"
-  
-      refresh_token if e.response.code == 400 && JSON.parse(e.response)['error_code'] == "400016"
-      
-      fetch
     end
   end
 end
