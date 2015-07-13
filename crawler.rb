@@ -40,7 +40,6 @@ class Crawler
     end
     comments_content = ""
     if post.comments
-      comments_content << "<h3>评论</h3>"
       post.comments.each do |comment|
         if comment.author_id == post.author_id
           comments_content << "<a href=\"http://xueqiu.com/#{comment.author_id}\">#{comment.author_screenname}</a>:
@@ -58,7 +57,9 @@ class Crawler
         end
       end
     end
-    
+    if comments_content.length > 0
+      comments_content = "<h3>评论</h3>" + comments_content
+    end
     html_content = "<html>
 <head>
 	<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">
