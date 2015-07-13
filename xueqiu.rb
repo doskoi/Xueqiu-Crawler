@@ -146,7 +146,7 @@ class XueqiuEngine
     begin
       response = RestClient.get 'https://xueqiu.com/v4/statuses/user_timeline.json',
                   {:params => {'access_token' => self.token,
-                      'count' => 1,
+                      'count' => 20,
                       'user_id' => author_id,
                       'page' => 1}}
                     
