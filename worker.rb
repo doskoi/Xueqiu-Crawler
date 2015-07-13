@@ -8,26 +8,27 @@ if ARGV.count == 1
     args = ARGV.first.split("\/")
     crawler = Crawler.new
     crawler.aid = args[0]
-    crawler.grab(args[1])
     
-    puts "Start convert PDF"
+    crawler.fetch (args[1])
     
-    maker = PDFMaker.new
-    maker.aid = crawler.aid
-    maker.author = crawler.author
-    maker.convert_single(args[1])
+    # puts "Start convert PDF"
+    #
+    # maker = PDFMaker.new
+    # maker.aid = crawler.aid
+    # maker.author = crawler.author
+    # maker.convert_single(args[1])
   else
     crawler = Crawler.new
     crawler.aid = ARGV.first
 
     crawler.fetch
   
-    puts "Start convert PDF"
-
-    maker = PDFMaker.new
-    maker.aid = crawler.aid
-    maker.author = crawler.author
-    maker.convert
+    # puts "Start convert PDF"
+    #
+    # maker = PDFMaker.new
+    # maker.aid = crawler.aid
+    # maker.author = crawler.author
+    # maker.convert
   end
 else
   puts "Wrong argument"
