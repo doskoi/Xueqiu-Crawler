@@ -127,10 +127,13 @@ class Crawler
     return html_content
   end
   
-  def fetch (author_id, post_id)
+  def fetch (author_id, *args)
     @author_id = author_id
-    if post_id
-      posts = [(@xueqiu.fetch_post post_id)]
+    if args.count > 0
+      posts = Array.new
+      args.each do |post_id|
+        posts.push(@xueqiu.fetch_post post_id)
+      end
     else
       posts = @xueqiu.fetch_timeline @author_id
     end
@@ -138,12 +141,12 @@ class Crawler
     posts.each do |post|
       html_content = make_post_content post
       if html_content
-        puts "Save post #{post_id}"
-        File.open(filename2path(post_id), 'w') do |f|
+        puts "Save post #{post.id}"
+        File.open(filename2path(post.id), 'w') do |f|
             f.write(html_content)
         end
       else
-        puts "Post #{post_id} cannot parese json"
+        puts "Post #{post.id} cannot parese json"
       end
     end
   end
