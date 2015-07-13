@@ -88,9 +88,9 @@ class XueqiuEngine
       comment.id = comment_json['id']
       comment.text = comment_json['text']
       comment.author_id = comment_json['user_id']
+      comment.author_screenname = comment_json['user']['screen_name']
       comment.created_at = DateTime.strptime(comment_json['created_at'].to_s, '%Q')
       comment.reply_comment_id = comment_json['in_reply_to_comment_id']
-      comment.reply_screenname = comment_json['reply_screenName']
       comments.push comment
     end
     
@@ -106,9 +106,9 @@ class XueqiuEngine
         comment.id = comment_json['id']
         comment.text = comment_json['text']
         comment.author_id = comment_json['user_id']
-        comment.created_at = comment_json['created_at']
+        comment.author_screenname = comment_json['user']['screen_name']
+        comment.created_at = DateTime.strptime(comment_json['created_at'].to_s, '%Q')
         comment.reply_comment_id = comment_json['in_reply_to_comment_id']
-        comment.reply_screenname = comment_json['reply_screenName']
         comments.push comment
       end
     end
@@ -160,21 +160,21 @@ class XueqiuEngine
           posts.push fetch_post(post['id'])
         end
         
-        # 
-# if maxPage > 1
-#           (2..maxPage).each do |page|
-#             response = RestClient.get 'https://xueqiu.com/v4/statuses/user_timeline.json',
-#                         {:params => {'access_token' => self.token,
-#                             'count' => 50,
-#                             'user_id' => author_id,
-#                             'page' => page}}
-#
-#             json = JSON.parse response
-#             json['statuses'].each do |post|
-#               posts.push fetch_post(post['id'])
-#             end
-#           end
-#         end
+        
+        if maxPage > 1
+          (2..maxPage).each do |page|
+            response = RestClient.get 'https://xueqiu.com/v4/statuses/user_timeline.json',
+                        {:params => {'access_token' => self.token,
+                            'count' => 50,
+                            'user_id' => author_id,
+                            'page' => page}}
+
+            json = JSON.parse response
+            json['statuses'].each do |post|
+              posts.push fetch_post(post['id'])
+            end
+          end
+        end
         return posts
       end
     rescue => e
