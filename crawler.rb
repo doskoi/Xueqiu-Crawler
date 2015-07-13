@@ -37,6 +37,26 @@ class Crawler
       retweet_content = post.retweet_text
       quote_content = "<h3>#{retweet_title}</h3><p>#{retweet_content}</p>"
     end
+    comments_content = ""
+    if post.comments
+      comments_content << "<h3>评论</h3>"
+      post.comments.each do |comment|
+        if comment.author_id == post.author_id
+          comments_content << "<a href=\"http://xueqiu.com/#{comment.author_id}\">#{comment.author_screenname}</a>:
+          <div class=\"commnet\">#{comment.text}</div>
+          <span>#{comment.created_at_readable}</span>"
+          if comment.reply_comment_id
+            reply_comment = (post.comments.select {|c| c.id == comment.reply_comment_id}).first
+            if reply_comment
+              comments_content << "<blockquote><a href=\"http://xueqiu.com/#{reply_comment.author_id}\">#{reply_comment.author_screenname}</a>:
+          <div class=\"commnet\">#{reply_comment.text}</div>
+          <span>#{reply_comment.created_at_readable}</span></blockquote>"
+            end
+          end
+          comments_content << "<hr>"
+        end
+      end
+    end
     
     html_content = "<html>
 <head>
@@ -99,14 +119,20 @@ class Crawler
 	<p>#{content}</p>
 	<blockquote>#{quote_content}</blockquote>
   <span>#{created_at}</span>
+  <div>#{comments_content}</div>
 	<h4><p><a href=\"http://xueqiu.com/#{author_id}/#{tid}\">原文链接</a></p></h4>
   </body>
 </html>"
     return html_content
   end
   
-  def fetch
-    posts = @xueqiu.fetch_timeline @aid
+  def fetch (arg)
+    if arg
+      posts = [(@xueqiu.fetch_post arg)]
+    else
+      posts = @xueqiu.fetch_timeline @aid
+    end
+    
     posts.each do |post|
       html_content = make_post_content post
       puts "#{html_content}"
