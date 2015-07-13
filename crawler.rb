@@ -6,15 +6,16 @@ require 'fileutils'
 require_relative 'xueqiu'
 
 class Crawler
-  attr_accessor :aid, :author
+  attr_accessor :author_id, :author_name
 
   def initialize
     @xueqiu = XueqiuEngine.new
+    @xueqiu.with_comments = true
     @access_token = @xueqiu.token
   end
   
   def post_path
-    path = File.expand_path("posts/#{@aid}", File.dirname(__FILE__))
+    path = File.expand_path("posts/#{@author_id}", File.dirname(__FILE__))
     FileUtils.mkdir_p path
     return path
   end
@@ -24,7 +25,7 @@ class Crawler
   end
     
   def make_post_content(post)
-    @author = post.author_screenname if !@author
+    @author_name = post.author_screenname if !@author_name
     
     tid = post.id
     author_id = post.author_id
@@ -126,16 +127,24 @@ class Crawler
     return html_content
   end
   
-  def fetch (arg)
-    if arg
-      posts = [(@xueqiu.fetch_post arg)]
+  def fetch (author_id, post_id)
+    @author_id = author_id
+    if post_id
+      posts = [(@xueqiu.fetch_post post_id)]
     else
-      posts = @xueqiu.fetch_timeline @aid
+      posts = @xueqiu.fetch_timeline @author_id
     end
     
     posts.each do |post|
       html_content = make_post_content post
-      puts "#{html_content}"
+      if html_content
+        puts "Save post #{post_id}"
+        File.open(filename2path(post_id), 'w') do |f|
+            f.write(html_content)
+        end
+      else
+        puts "Post #{post_id} cannot parese json"
+      end
     end
   end
 

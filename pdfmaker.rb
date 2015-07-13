@@ -5,19 +5,19 @@ require 'pdfkit'
 require 'combine_pdf'
 
 class PDFMaker
-  attr_accessor :aid, :author
+  attr_accessor :author_id, :author_name
   
   def initialize
   end
     
   def post_path
-    path = File.expand_path("posts/#{@aid}", File.dirname(__FILE__))
+    path = File.expand_path("posts/#{@author_id}", File.dirname(__FILE__))
     FileUtils.mkdir_p path
     return path
   end
   
   def save_path
-    path = File.expand_path("posts/#{@aid}/PDF", File.dirname(__FILE__))
+    path = File.expand_path("posts/#{@author_id}/PDF", File.dirname(__FILE__))
     FileUtils.mkdir_p path
     return path
   end
@@ -42,7 +42,7 @@ class PDFMaker
         font-family: AdobeFangsongStd-Regular;
         color: rgb(0, 0, 0);
     }
-    #author
+    #author_name
     {
         position: absolute;
         left: 34px;
@@ -82,8 +82,8 @@ class PDFMaker
         <div id=\"createAt\">
         截止于#{Time.now.strftime("%Y年%m月%d日")}
         </div>
-        <div id=\"author\">
-        #{@author}
+        <div id=\"author_name\">
+        #{@author_name}
         </div>
         <div id=\"footer\">
         <a href=\"http://xueqiu.com/6023636062\" class  id=\"publisher\">DireWolf</a>出版，仅供学习交流，文章版权归原作者所有，非原作者授权禁止用于任何商业用途。
@@ -146,7 +146,7 @@ class PDFMaker
       pdf << CombinePDF.load(file)
     end
     
-    pdf.save(File.expand_path("posts/#{@author}_#{@single}.pdf", File.dirname(__FILE__)))
+    pdf.save(File.expand_path("posts/#{@author_name}_#{@single}.pdf", File.dirname(__FILE__)))
   end
 
   
@@ -161,7 +161,7 @@ class PDFMaker
       end
     end
     # pdf.number_pages
-    pdf.save(File.expand_path("posts/#{@author}.pdf", File.dirname(__FILE__)))
+    pdf.save(File.expand_path("posts/#{@author_name}.pdf", File.dirname(__FILE__)))
   end
 
   def convert

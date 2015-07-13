@@ -7,7 +7,11 @@ require_relative 'model/post'
 require_relative 'model/comment'
 
 class XueqiuEngine
-  attr_accessor :token
+  attr_accessor :token, :with_comments
+  
+  def initialize
+    @with_comments = false
+  end
 
   def token
     return @token if @token != nil
@@ -77,6 +81,8 @@ class XueqiuEngine
   end
   
   def fetch_comments_excellent(post_id)
+    puts "Get excellent comments for #{post_id}"
+        
     response = RestClient.get 'https://api.xueqiu.com/statuses/comments_excellent.json',
                 {:params => {
                 'access_token' => self.token,
@@ -98,8 +104,11 @@ class XueqiuEngine
   end
   
   def fetch_comments(post_id)
+    puts "Get comments for #{post_id}"
+        
     comments = Array.new
     maxPage = 1
+    
     get_comment = Proc.new do |json|
       json['comments'].each do |comment_json|
         comment = Comment.new
@@ -189,7 +198,7 @@ class XueqiuEngine
                       'access_token' => self.token,
                       'id' => post_id}}
 
-      puts "Get post #{response.code}"
+      puts "Get post #{post_id} : code #{response.code}"
       case response.code
       when 200
         json = JSON.parse response
@@ -204,7 +213,9 @@ class XueqiuEngine
           post.retweet_title = json['retweeted_status']['title']
           post.retweet_text = json['retweeted_status']['text'].gsub(/!custom.jpg/) {""}
         end
-        post.comments = self.fetch_comments post.id
+        if @with_comments
+          post.comments = self.fetch_comments post.id
+        end
         return post
       end
     rescue => e
