@@ -2,30 +2,31 @@
 require_relative 'crawler'
 require_relative 'pdfmaker'
 
-if ARGV.count <= 2
-  if (ARGV.first.include? "/")
-    args = ARGV.first.split("\/")
-    crawler = Crawler.new
+args = Hash[ ARGV.flat_map{|s| s.scan(/--?([^=\s]+)(?:=(\S+))?/) } ]
 
-    crawler.fetch(args[0], args[1])
+if args.has_key?('f')
+  crawler = Crawler.new
+  crawler.with_comments = true if args.has_key?('c')
+  
+  if (args['f'].include? "/")
+    params = args['f'].split("\/")
+    crawler.fetch(params[0], params[1])
     
-    if ARGV[1] == "pdf"
+    if args.has_key?('pdf')
       puts "Start convert PDF"
 
       maker = PDFMaker.new
       maker.author_id = crawler.author_id
       maker.author_name = crawler.author_name
-      maker.convert_single(args[1])
+      maker.convert_single(params[1])
     end
 
   else
-    crawler = Crawler.new
+    crawler.fetch(args['f'])
 
-    crawler.fetch(ARGV.first)
-  
-    if ARGV[1] == "pdf"
+    if args.has_key?('pdf')
       puts "Start convert PDF"
-
+      
       maker = PDFMaker.new
       maker.author_id = crawler.author_id
       maker.author_name = crawler.author_name
@@ -33,9 +34,9 @@ if ARGV.count <= 2
     end
   end
 else
-  puts "Wrong argument"
+  puts "Exit"
 end
 
-# ./worker user_id
-# ./worker user_id/post_id
-# ./worker user_id/post_id pdf
+# ./worker -f=user_id
+# ./worker -f=user_id/post_id -c
+# ./worker -f=user_id/post_id -p
