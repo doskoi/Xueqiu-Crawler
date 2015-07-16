@@ -6,11 +6,12 @@ require 'fileutils'
 require_relative 'xueqiu'
 
 class Crawler
-  attr_accessor :author_id, :author_name
+  attr_accessor :author_id, :author_name, :with_comments
 
   def initialize
     @xueqiu = XueqiuEngine.new
     @access_token = @xueqiu.token
+    @with_comments = false
   end
   
   def post_path
@@ -123,26 +124,8 @@ class Crawler
   
   def fetch (author_id, *args)
     @author_id = author_id
-    posts = Array.new
     
-    if args.count > 0
-      args.each do |post_id|
-        posts.push(@xueqiu.fetch_post(post_id, true))
-      end
-    else
-      posts_id_array = @xueqiu.fetch_timeline @author_id
-      
-      posts_id_array.each do |post_id|
-        if File.exist?(filename2path(post_id))
-          puts "Post #{post_id} are exist"
-        else
-          # not exist
-          posts.push(@xueqiu.fetch_post(post_id, true))
-        end
-      end
-    end
-    
-    posts.each do |post|
+    save_post = Proc.new do |post|
       html_content = make_post_content post
       if html_content
         puts "Save post #{post.id}"
@@ -153,6 +136,24 @@ class Crawler
         puts "Post #{post.id} cannot parese json"
       end
     end
+    
+    if args.count > 0
+      args.each do |post_id|
+        save_post.call @xueqiu.fetch_post(post_id, @with_comments)
+      end
+    else
+      posts_id_array = @xueqiu.fetch_timeline @author_id
+      
+      posts_id_array.each do |post_id|
+        if File.exist?(filename2path(post_id))
+          puts "Post #{post_id} are exist"
+        else
+          # not exist
+          save_post.call @xueqiu.fetch_post(post_id, @with_comments)
+        end
+      end
+    end
+    
   end
 
   
