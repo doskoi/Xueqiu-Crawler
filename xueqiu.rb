@@ -210,6 +210,8 @@ class XueqiuEngine
         post.author_screenname = json['user']['screen_name']
         post.created_at = DateTime.strptime(json['created_at'].to_s, '%Q')
         if json['retweeted_status']
+          post.retweet_author_id = json['retweeted_status']['user_id']
+          post.retweet_author_screenname = json['retweeted_status']['user']['screen_name']
           post.retweet_title = json['retweeted_status']['title']
           post.retweet_text = json['retweeted_status']['text'].gsub(/!custom.jpg/) {""}
         end

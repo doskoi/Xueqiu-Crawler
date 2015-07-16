@@ -34,9 +34,7 @@ class Crawler
     created_at = post.created_at_readable
     quote_content = ""
     if post.retweet_text
-      retweet_title = post.retweet_title
-      retweet_content = post.retweet_text
-      quote_content = "<h3>#{retweet_title}</h3><p>#{retweet_content}</p>"
+      quote_content = "<a href=\"http://xueqiu.com/#{post.retweet_author_id}\">#{post.retweet_author_screenname}</a>: <h3>#{post.retweet_title}</h3><p>#{post.retweet_text}</p>"
     end
     comments_content = ""
     if post.comments
@@ -81,16 +79,12 @@ class Crawler
 		    margin-bottom: 60px;
 		    margin-bottom: 40px;
 		    padding: 5px;
-		    border-bottom: 1px LightGrey solid;
 		    width: 90%;
 		    line-height: 150%;
 		}
 
 		H3 {
 		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
-		    margin-top: 40px;
-		    margin-bottom: 30px;
-		    border-bottom: 1px LightGrey solid;
 		    width: 80%;
 		    line-height: 150%;
 		}
