@@ -7,7 +7,7 @@ require_relative 'model/post'
 require_relative 'model/comment'
 
 class XueqiuEngine
-  attr_accessor :token, :with_comments
+  attr_accessor :token
   
   def initialize
     @with_comments = false
@@ -129,6 +129,7 @@ class XueqiuEngine
                 'asc' => 0,
                 'page' => 1}}
     json = JSON.parse response
+    puts "Comments Page 1 of Post #{post_id}"
     maxPage = json['maxPage']
     get_comment.call json
     
@@ -141,6 +142,7 @@ class XueqiuEngine
                     'asc' => 0,
                     'page' => page}}
         json = JSON.parse response
+        puts "Comments Page #{page} of Pages #{maxPage}"
         get_comment.call json
       end
     end
@@ -163,12 +165,11 @@ class XueqiuEngine
       case response.code
       when 200
         json = JSON.parse response
-        puts "#{json['statuses'].count} of Total: #{json['total']}"
+        puts "Page 1 of User: #{author_id}"
         maxPage = json['maxPage']
         json['statuses'].each do |post|
-          posts.push fetch_post(post['id'])
+          posts.push post['id']
         end
-        
         
         if maxPage > 1
           (2..maxPage).each do |page|
@@ -177,10 +178,11 @@ class XueqiuEngine
                             'count' => 50,
                             'user_id' => author_id,
                             'page' => page}}
-
+                            
             json = JSON.parse response
+            puts "Page #{page} of Pages #{maxPage}"
             json['statuses'].each do |post|
-              posts.push fetch_post(post['id'])
+              posts.push post['id']
             end
           end
         end
@@ -191,7 +193,7 @@ class XueqiuEngine
     end
   end
   
-  def fetch_post(post_id)
+  def fetch_post(post_id, with_comments)
     begin
       response = RestClient.get 'https://api.xueqiu.com/statuses/show.json',
                   {:params => {
@@ -215,7 +217,7 @@ class XueqiuEngine
           post.retweet_title = json['retweeted_status']['title']
           post.retweet_text = json['retweeted_status']['text'].gsub(/!custom.jpg/) {""}
         end
-        if @with_comments
+        if with_comments
           post.comments = self.fetch_comments post.id
         end
         return post

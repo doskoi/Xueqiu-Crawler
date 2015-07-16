@@ -10,7 +10,6 @@ class Crawler
 
   def initialize
     @xueqiu = XueqiuEngine.new
-    @xueqiu.with_comments = true
     @access_token = @xueqiu.token
   end
   
@@ -124,13 +123,23 @@ class Crawler
   
   def fetch (author_id, *args)
     @author_id = author_id
+    posts = Array.new
+    
     if args.count > 0
-      posts = Array.new
       args.each do |post_id|
-        posts.push(@xueqiu.fetch_post post_id)
+        posts.push(@xueqiu.fetch_post(post_id, true))
       end
     else
-      posts = @xueqiu.fetch_timeline @author_id
+      posts_id_array = @xueqiu.fetch_timeline @author_id
+      
+      posts_id_array.each do |post_id|
+        if File.exist?(filename2path(post_id))
+          puts "Post #{post_id} are exist"
+        else
+          # not exist
+          posts.push(@xueqiu.fetch_post(post_id, true))
+        end
+      end
     end
     
     posts.each do |post|
