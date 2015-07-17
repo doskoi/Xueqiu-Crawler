@@ -13,7 +13,7 @@ if args.has_key?('f')
     crawler.fetch(params[0], params[1])
     
     if args.has_key?('pdf')
-      puts "Start convert PDF"
+      puts "Start convert PDF for #{crawler.author_name} (#{crawler.author_id})"
 
       maker = PDFMaker.new
       maker.author_id = crawler.author_id
@@ -25,7 +25,7 @@ if args.has_key?('f')
     crawler.fetch(args['f'])
 
     if args.has_key?('pdf')
-      puts "Start convert PDF"
+      puts "Start convert PDF for #{crawler.author_name} (#{crawler.author_id})"
       
       maker = PDFMaker.new
       maker.author_id = crawler.author_id
