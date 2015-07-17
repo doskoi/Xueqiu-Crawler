@@ -128,7 +128,7 @@ class XueqiuEngine
                 'access_token' => self.token,
                 'id' => post_id,
                 'asc' => 0,
-                'count' => 1000,
+                'count' => 200,
                 'page' => 1}}
     json = JSON.parse response
     puts "Comments Page 1 of Post #{post_id}"
@@ -142,7 +142,7 @@ class XueqiuEngine
                     'access_token' => self.token,
                     'id' => post_id,
                     'asc' => 0,
-                    'count' => 1000,
+                    'count' => 200,
                     'page' => page}}
         json = JSON.parse response
         puts "Comments Page #{page} of Pages #{maxPage}"

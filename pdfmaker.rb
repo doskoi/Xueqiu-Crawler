@@ -139,7 +139,7 @@ class PDFMaker
   end
   
   def combine_single(pdfs)
-    puts "Combining PDFs"
+    puts "Combining PDFs #{@author_name}"
     pdf = CombinePDF.new
     
     pdfs.each do |file|
@@ -151,7 +151,7 @@ class PDFMaker
 
   
   def combine
-    puts "Combining PDFs"
+    puts "Combining PDFs #{@author_name}"
     pdf = CombinePDF.new
     
     Dir.foreach(save_path) do |file|
