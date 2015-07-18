@@ -40,7 +40,7 @@ class XueqiuEngine
       json['list'].each do |list|
         t = Transaction.new
         t.id = list['id']
-        t.created_at = DateTime.strptime(list['created_at'].to_s, '%Q')
+        t.created_at = Time.at(list['created_at'].to_s[0..9].to_i).to_datetime
         t.status = list['status']
         t.cash = list['cash']
         t.net_value = list['cash_value']
@@ -51,7 +51,7 @@ class XueqiuEngine
           list['rebalancing_histories'].each do |trade|
             ut = UserTransaction.new
             ut.id = trade['id']
-            ut.created_at = DateTime.strptime(trade['created_at'].to_s, '%Q')
+            ut.created_at = Time.at(trade['created_at'].to_s[0..9].to_i).to_datetime
             ut.stock_name = trade['stock_name']
             ut.stock_symbol = trade['stock_symbol']
             ut.price = trade['price']
@@ -129,7 +129,7 @@ class XueqiuEngine
       comment.text = comment_json['text']
       comment.author_id = comment_json['user_id']
       comment.author_screenname = comment_json['user']['screen_name']
-      comment.created_at = DateTime.strptime(comment_json['created_at'].to_s, '%Q')
+      comment.created_at = Time.at(comment_json['created_at'].to_s[0..9].to_i).to_datetime
       comment.reply_comment_id = comment_json['in_reply_to_comment_id']
       comments.push comment
     end
@@ -150,7 +150,7 @@ class XueqiuEngine
         comment.text = comment_json['text']
         comment.author_id = comment_json['user_id']
         comment.author_screenname = comment_json['user']['screen_name']
-        comment.created_at = DateTime.strptime(comment_json['created_at'].to_s, '%Q')
+        comment.created_at = Time.at(comment_json['created_at'].to_s[0..9].to_i).to_datetime
         comment.reply_comment_id = comment_json['in_reply_to_comment_id']
         comments.push comment
       end
@@ -247,7 +247,7 @@ class XueqiuEngine
         post.text = json['text'].gsub(/!custom.jpg/) {""}
         post.author_id = json['user_id']
         post.author_screenname = json['user']['screen_name']
-        post.created_at = DateTime.strptime(json['created_at'].to_s, '%Q')
+        post.created_at = Time.at(json['created_at'].to_s[0..9].to_i).to_datetime
         if json['retweeted_status']
           post.retweet_author_id = json['retweeted_status']['user_id']
           post.retweet_author_screenname = json['retweeted_status']['user']['screen_name']
