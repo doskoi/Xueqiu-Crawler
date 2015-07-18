@@ -34,9 +34,14 @@ if args.has_key?('f')
     end
   end
 elsif args.has_key?('z')
-  cube_id = args['z']
+  if (args['z'].include? ",")
+    cubes_id = args['z'].split(",")
+  else
+    cubes_id = [args['z']]
+  end
+  
   crawler = Crawler.new
-  crawler.fetch_cube(cube_id)
+  cubes_id.each {|cube_id| crawler.fetch_cube(cube_id)}
 else
   puts "Exit"
 end

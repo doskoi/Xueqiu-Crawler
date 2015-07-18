@@ -111,7 +111,7 @@ class XueqiuEngine
                   'count' => 50,
                   'page' => 1}}
                   
-      puts "Get sample #{response.code}"
+      puts "Get cube #{cube_id} sample #{response.code}"
       case response.code
       when 200
         json = JSON.parse response
