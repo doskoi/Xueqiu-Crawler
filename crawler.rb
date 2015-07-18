@@ -135,10 +135,12 @@ class Crawler
       <ul>"
       if transaction.trades
         transaction.trades.each do |ut|
-          content << "<li>#{ut.stock_name} (#{ut.stock_symbol}) ¥#{ut.price} | #{ut.prev_weight_adjusted}% -> #{ut.target_weight}%</li>"
+          content << "<li>#{ut.stock_name} (#{ut.stock_symbol}) ¥#{ut.price} <br/> #{ut.prev_weight_adjusted}% -> #{ut.target_weight}%</li>"
         end
       end
-      content << "</ul></div><hr/>"
+      content << "</ul>"
+      content << "<span class=\"comment\">#{transaction.comment}</span>" if transaction.comment
+      content << "</div><hr/>"
     end
     
     html_content = "<html>
@@ -202,6 +204,11 @@ class Crawler
     		.success {
     			color: #00cc00;
     		}
+        
+        .comment {
+          margin-left: 10px;
+          font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+        }
     	</style>
     </head>
     <body>

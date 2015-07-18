@@ -75,6 +75,7 @@ class XueqiuEngine
         t.cash = list['cash']
         t.net_value = list['cash_value']
         t.category = list['category']
+        t.comment = list['comment']
         
         if list['rebalancing_histories'].count > 0
           trades = Array.new
