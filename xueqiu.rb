@@ -7,6 +7,7 @@ require_relative 'model/post'
 require_relative 'model/comment'
 require_relative 'model/transaction'
 require_relative 'model/user_transaction'
+require_relative 'model/cube'
 
 class XueqiuEngine
   attr_accessor :token
@@ -30,6 +31,35 @@ class XueqiuEngine
       end
     rescue => e
       puts "Get token failed: #{e.inspect}"
+    end
+  end
+  
+  def fetch_cube_info(cube_id)
+    begin
+      response = RestClient.get 'https://api.xueqiu.com/cubes/quote.json',
+                  {:params => {
+                  'access_token' => self.token,
+                  'code' => cube_id,
+                  'return_hasexist' => 1}}
+              
+      puts "Get cube info #{response.code}"
+      case response.code
+      when 200
+        json = JSON.parse response
+        cube = Cube.new
+        cube.symbol = json[cube_id]['symbol']
+        cube.name = json[cube_id]['name']
+        cube.market = json[cube_id]['market']
+        cube.net_value = json[cube_id]['net_value']
+        cube.daily_gain = json[cube_id]['daily_gain']
+        cube.monthly_gain = json[cube_id]['monthly_gain']
+        cube.annualized_gain = json[cube_id]['annualized_gain']
+        cube.total_gain = json[cube_id]['total_gain']
+        
+        cube
+      end
+    rescue => e
+      puts "Get cube info failed: #{e.inspect}"
     end
   end
   

@@ -124,7 +124,7 @@ class Crawler
     return html_content
   end
   
-  def make_transactions_content(transactions, cube_id)
+  def make_transactions_content(cube, transactions)
     content =""
     
     transactions.each do |transaction|
@@ -143,6 +143,7 @@ class Crawler
     
     html_content = "<html>
     <head>
+      <title>#{cube.name}</title>
     	<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">
     	<style type=\"text/css\" media=\"all\">
     		body {
@@ -204,8 +205,10 @@ class Crawler
     	</style>
     </head>
     <body>
+      <h2><a href=\"http://xueqiu.com/P/#{cube.symbol}\">#{cube.name}</a></h2>
+      <h3>净值: #{cube.net_value}</h3>
+      <p>日回报率: #{cube.daily_gain} 月回报率: #{cube.monthly_gain} 年回报率: #{cube.annualized_gain} 总回报: #{cube.total_gain}</p>
     	<p>#{content}</p>
-    	<h4><p><a href=\"http://xueqiu.com/P/#{cube_id}\">组合链接</a></p></h4>
       </body>
     </html>"
     
@@ -246,12 +249,13 @@ class Crawler
   end
 
   def fetch_cube (cube_id)
+    cube = @xueqiu.fetch_cube_info(cube_id)
     transactions = @xueqiu.fetch_cube(cube_id)
     
-    html_content = make_transactions_content(transactions, cube_id)
+    html_content = make_transactions_content(cube, transactions)
     if html_content
       puts "Save Cube transactions #{cube_id}"
-      File.open(cube_path(cube_id), 'w') do |f|
+      File.open(cube_path("#{cube.name}-#{cube.symbol}"), 'w') do |f|
           f.write(html_content)
       end
     else
