@@ -135,7 +135,7 @@ class Crawler
       <ul>"
       if transaction.trades
         transaction.trades.each do |ut|
-          content << "<li>#{ut.stock_name} (#{ut.stock_symbol}) $#{ut.price} | #{ut.prev_weight_adjusted}% -> #{ut.target_weight}%)</li>"
+          content << "<li>#{ut.stock_name} (#{ut.stock_symbol}) ¥#{ut.price} | #{ut.prev_weight_adjusted}% -> #{ut.target_weight}%</li>"
         end
       end
       content << "</ul></div><hr/>"
