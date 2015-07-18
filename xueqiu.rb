@@ -5,6 +5,8 @@ require 'json'
 require 'date'
 require_relative 'model/post'
 require_relative 'model/comment'
+require_relative 'model/transaction'
+require_relative 'model/user_transaction'
 
 class XueqiuEngine
   attr_accessor :token
@@ -32,10 +34,42 @@ class XueqiuEngine
   end
   
   def fetch_cube(cube_id)
-    actions = Array.new
+    transactions = Array.new
     maxPage = 1
     get_actions = Proc.new do |json|
-      json['list'].each {|list| actions.push list}
+      json['list'].each do |list|
+        t = Transaction.new
+        t.id = list['id']
+        t.created_at = DateTime.strptime(list['created_at'].to_s, '%Q')
+        t.status = list['status']
+        t.cash = list['cash']
+        t.net_value = list['cash_value']
+        t.category = list['category']
+        
+        if list['rebalancing_histories'].count > 0
+          trades = Array.new
+          list['rebalancing_histories'].each do |trade|
+            ut = UserTransaction.new
+            ut.id = trade['id']
+            ut.created_at = DateTime.strptime(trade['created_at'].to_s, '%Q')
+            ut.stock_name = trade['stock_name']
+            ut.stock_symbol = trade['stock_symbol']
+            ut.price = trade['price']
+            ut.prev_price = trade['prev_price']
+            ut.net_value = trade['net_value']
+            ut.prev_net_value = trade['prev_net_value']
+            ut.weight = trade['weight']
+            ut.target_weight = trade['target_weight']
+            ut.prev_target_weight = trade['prev_target_weight']
+            ut.prev_weight_adjusted = trade['prev_weight_adjusted']
+            
+            trades.push ut
+          end
+          t.trades = trades
+        end
+        
+        transactions.push t
+      end
     end
     
     begin
@@ -77,8 +111,7 @@ class XueqiuEngine
       end
     end
     
-    puts "Get actions: #{actions.count}"
-    actions
+    transactions
   end
   
   def fetch_comments_excellent(post_id)

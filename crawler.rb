@@ -14,14 +14,16 @@ class Crawler
     @with_comments = false
   end
   
-  def post_path
+  def post_path (post_id)
     path = File.expand_path("posts/#{@author_id}", File.dirname(__FILE__))
-    FileUtils.mkdir_p path
-    return path
+    FileUtils.mkdir_p path if Dir.exist?(path) == false
+    return File.expand_path("#{filename}.html", path)
   end
   
-  def filename2path (filename)
-    File.expand_path("#{filename}.html", post_path)
+  def cube_path(cube_id)
+    path = File.expand_path("cube", File.dirname(__FILE__))
+    FileUtils.mkdir_p path if Dir.exist?(path) == false
+    return File.expand_path("#{cube_id}.html", path)
   end
     
   def make_post_content(post)
@@ -122,6 +124,94 @@ class Crawler
     return html_content
   end
   
+  def make_transactions_content(transactions, cube_id)
+    content =""
+    
+    transactions.each do |transaction|
+      content << "<div>
+      <div>#{transaction.created_at_readable}</div>
+      <span class=\"#{transaction.status}\">#{transaction.status_readable}</span>
+      <span>#{transaction.category_readable}</span>
+      <ul>"
+      if transaction.trades
+        transaction.trades.each do |ut|
+          content << "<li>#{ut.stock_name} (#{ut.stock_symbol}) $#{ut.price} | #{ut.prev_weight_adjusted}% -> #{ut.target_weight}%)</li>"
+        end
+      end
+      content << "</ul></div><hr/>"
+    end
+    
+    html_content = "<html>
+    <head>
+    	<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">
+    	<style type=\"text/css\" media=\"all\">
+    		body {
+    			font-family: \"SimSun\", \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    			font-size: 18px;
+    		}
+    		img {
+    			max-width: 768px; 
+    		}
+    		H1 {
+    		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		}
+
+    		H2 {
+    		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		    margin-bottom: 60px;
+    		    margin-bottom: 40px;
+    		    padding: 5px;
+    		    width: 90%;
+    		    line-height: 150%;
+    		}
+
+    		H3 {
+    		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		    width: 80%;
+    		    line-height: 150%;
+    		}
+    		H4 {
+    		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		}
+    
+    		H5 {
+    		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		}
+
+    		li {
+    		    margin-left: 10px;
+    		}
+    		blockquote {
+    			border-left: 4px lightgrey solid;
+    			padding-left: 5px;
+    			margin-left: 20px;
+    		}
+    		a {
+    			color: #000;
+    		}
+		
+    		.failed {
+    			color: #cc0000;
+    		}
+		
+    		.canceled {
+    			color: #999;
+    		}
+		
+    		.success {
+    			color: #00cc00;
+    		}
+    	</style>
+    </head>
+    <body>
+    	<p>#{content}</p>
+    	<h4><p><a href=\"http://xueqiu.com/P/#{cube_id}\">组合链接</a></p></h4>
+      </body>
+    </html>"
+    
+    return html_content
+  end
+  
   def fetch (author_id, *args)
     @author_id = author_id
     
@@ -129,7 +219,7 @@ class Crawler
       html_content = make_post_content post
       if html_content
         puts "Save post #{post.id}"
-        File.open(filename2path(post.id), 'w') do |f|
+        File.open(post_path(post.id), 'w') do |f|
             f.write(html_content)
         end
       else
@@ -145,7 +235,7 @@ class Crawler
       posts_id_array = @xueqiu.fetch_timeline @author_id
       
       posts_id_array.each do |post_id|
-        if File.exist?(filename2path(post_id))
+        if File.exist?(post_path(post_id))
           puts "Post #{post_id} are exist"
         else
           # not exist
@@ -153,8 +243,20 @@ class Crawler
         end
       end
     end
-    
   end
 
+  def fetch_cube (cube_id)
+    transactions = @xueqiu.fetch_cube(cube_id)
+    
+    html_content = make_transactions_content(transactions, cube_id)
+    if html_content
+      puts "Save Cube transactions #{cube_id}"
+      File.open(cube_path(cube_id), 'w') do |f|
+          f.write(html_content)
+      end
+    else
+      puts "Cube #{cube_id} cannot parese json"
+    end
+  end
   
 end
