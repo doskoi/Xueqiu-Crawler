@@ -129,7 +129,7 @@ class Crawler
     
     transactions.each do |transaction|
       content << "<div>
-      <div>#{transaction.created_at_readable}</div>
+      <div>#{transaction.created_at_readable}<span class=\"netvalue\">净值: #{transaction.net_value.round(2)}</span></div>
       <span class=\"#{transaction.status}\">#{transaction.status_readable}</span>
       <span>#{transaction.category_readable}</span>
       <ul>"
@@ -209,6 +209,11 @@ class Crawler
           margin-left: 10px;
           font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
         }
+        
+    		.netvalue {
+    			padding-left: 10px;
+          font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		}
     	</style>
     </head>
     <body>
