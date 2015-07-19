@@ -1,10 +1,18 @@
 require_relative 'user_transaction'
 
 class Transaction
-  attr_accessor :id, :created_at, :status, :cash, :net_value, :category, :comment, :trades
+  attr_accessor :id, :created_at, :status, :cash, :cash_value, :category, :comment, :trades
   
   #status: success, failed, canceled
   #category: user_rebalancing, sys_rebalancing
+  
+  def cash
+    if @cash == 0
+      0
+    else
+      @cash
+    end
+  end
   
   def category_readable
     if @category == "user_rebalancing"

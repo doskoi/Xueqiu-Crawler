@@ -73,7 +73,7 @@ class XueqiuEngine
         t.created_at = Time.at(list['created_at'].to_s[0..9].to_i).to_datetime
         t.status = list['status']
         t.cash = list['cash']
-        t.net_value = list['cash_value']
+        t.cash_value = list['cash_value']
         t.category = list['category']
         t.comment = list['comment']
         

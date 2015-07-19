@@ -17,7 +17,7 @@ class Crawler
   def post_path (post_id)
     path = File.expand_path("posts/#{@author_id}", File.dirname(__FILE__))
     FileUtils.mkdir_p path if Dir.exist?(path) == false
-    return File.expand_path("#{filename}.html", path)
+    return File.expand_path("#{post_id}.html", path)
   end
   
   def cube_path(cube_id)
@@ -128,9 +128,10 @@ class Crawler
     content =""
     
     transactions.each do |transaction|
+      next if (transaction.status != "success" || transaction.category == "sys_rebalancing")
       content << "<div>
-      <div>#{transaction.created_at_readable}<span class=\"netvalue\">净值: #{transaction.net_value.round(2)}</span></div>
-      <span class=\"#{transaction.status}\">#{transaction.status_readable}</span>
+      <div>#{transaction.created_at_readable}<span class=\"netvalue\">现金值: #{transaction.cash_value.round(2)}</span><span class=\"cash\">现金: #{transaction.cash}%</span></div>
+      <!--<span class=\"#{transaction.status}\">#{transaction.status_readable}</span>-->
       <span>#{transaction.category_readable}</span>
       <ul>"
       if transaction.trades
@@ -139,7 +140,7 @@ class Crawler
         end
       end
       content << "</ul>"
-      content << "<span class=\"comment\">#{transaction.comment}</span>" if transaction.comment
+      content << "<span class=\"comment\">“#{transaction.comment}”</span>" if transaction.comment && transaction.comment != ""
       content << "</div><hr/>"
     end
     
@@ -211,6 +212,11 @@ class Crawler
         }
         
     		.netvalue {
+    			padding-left: 10px;
+          font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		}
+        
+    		.cash {
     			padding-left: 10px;
           font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
     		}
