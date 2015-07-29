@@ -4,13 +4,17 @@ require_relative 'pdfmaker'
 
 args = Hash[ ARGV.flat_map{|s| s.scan(/--?([^=\s]+)(?:=(\S+))?/) } ]
 
-if args.has_key?('h')
+def print_help
   puts "  -h This help info
   -f= user id
   -z= cube symbol
   -c comments
   -pdf convert to pdf
   "
+end
+
+if args.has_key?('h')
+  print_help
 elsif args.has_key?('f')
   crawler = Crawler.new
   crawler.with_comments = true if args.has_key?('c')
@@ -50,5 +54,5 @@ elsif args.has_key?('z')
   crawler = Crawler.new
   cubes_id.each {|cube_id| crawler.fetch_cube(cube_id)}
 else
-  puts "Exit"
+  print_help
 end
