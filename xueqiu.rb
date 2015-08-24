@@ -295,5 +295,22 @@ class XueqiuEngine
     end
   end
   
+  def fetch_lastest_post_id(author_id)
+    begin
+      response = RestClient.get 'https://xueqiu.com/v4/user/show.json',
+                  {:params => {
+                      'access_token' => self.token,
+                      'id' => author_id}}
+                      
+      case response.code
+      when 200
+        rep = JSON.parse response
+        return rep['last_status_id']
+      end
+    rescue => e
+      puts "Get last status failed: #{e.inspect}"
+    end
+  end
+  
 end
 

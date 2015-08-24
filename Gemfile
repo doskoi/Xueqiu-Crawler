@@ -5,3 +5,5 @@ gem 'json'
 
 gem 'pdfkit'
 gem 'combine_pdf'
+
+gem 'mail'

@@ -6,12 +6,15 @@ require 'fileutils'
 require_relative 'xueqiu'
 
 class Crawler
-  attr_accessor :author_id, :author_name, :with_comments
+  attr_accessor :author_id, :author_name, :with_comments, :mail_mode, :mail_on_hold, :mail_real_time
 
   def initialize
     @xueqiu = XueqiuEngine.new
     @access_token = @xueqiu.token
     @with_comments = false
+    @mail_mode = false
+    @mail_on_hold = false
+    @mail_real_time = false
   end
   
   def post_path (post_id)
@@ -60,6 +63,32 @@ class Crawler
     if comments_content.length > 0
       comments_content = "<h3>评论</h3>" + comments_content
     end
+    
+    if @mail_mode
+      @mail_on_hold = true
+      @mail_real_time = false
+  
+      code = content[/(00|30|60)\d{4}/]
+      if (code && code.length == 6)
+          @mail_on_hold = false
+          @mail_real_time = true if content.length < 140
+      end
+  
+      donate_content = (@real_time) ? "
+        <div>
+      		<h5><p>打赏二维码
+      		</p></h5>
+      		<img src=\"cid:qr-code.gif\">
+      	</div>
+        " : ""
+        
+        unsubscribe_content = "<h5><p><a href=\"%mailing_list_unsubscribe_url%\">从此邮件列表退订</a></p></h5>"
+
+        email_content = ""
+        email_content << donate_content
+        email_content << unsubscribe_content
+    end
+    
     html_content = "<html>
 <head>
 	<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">
@@ -119,8 +148,10 @@ class Crawler
   <span>#{created_at}</span>
   <div>#{comments_content}</div>
 	<h4><p><a href=\"http://xueqiu.com/#{author_id}/#{tid}\">原文链接</a></p></h4>
+  <p>#{email_content}</p>
   </body>
 </html>"
+
     return html_content
   end
   
@@ -264,6 +295,11 @@ class Crawler
         end
       end
     end
+  end
+  
+  def fetch_lastest_post_id(author_id)
+    author_id = @author_id if author_id.nil?
+    @xueqiu.fetch_lastest_post_id author_id
   end
 
   def fetch_cube (cube_id)

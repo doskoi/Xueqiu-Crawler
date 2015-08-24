@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require_relative 'crawler'
 require_relative 'pdfmaker'
+require_relative 'mailer'
 
 args = Hash[ ARGV.flat_map{|s| s.scan(/--?([^=\s]+)(?:=(\S+))?/) } ]
 
@@ -9,6 +10,7 @@ def print_help
   -f= user id
   -z= cube symbol
   -c comments
+  -e email
   -pdf convert to pdf
   "
 end
@@ -19,31 +21,42 @@ elsif args.has_key?('f')
   crawler = Crawler.new
   crawler.with_comments = true if args.has_key?('c')
   
-  if (args['f'].include? "/")
-    params = args['f'].split("\/")
-    crawler.fetch(params[0], params[1])
+  if args.has_key?('e')
+    # email mode
+    crawler.author_id = (args['f'])
     
-    if args.has_key?('pdf')
-      puts "Start convert PDF for #{crawler.author_name} (#{crawler.author_id})"
-
-      maker = PDFMaker.new
-      maker.author_id = crawler.author_id
-      maker.author_name = crawler.author_name
-      maker.convert_single(params[1])
-    end
-
+    mailer = Mailer.new(crawler)
+    mailer.send_latest_post_if_needed
   else
-    crawler.fetch(args['f'])
+    # normal
+    if (args['f'].include? "/")
+      # author_id/post_id
+      params = args['f'].split("\/")
+      crawler.fetch(params[0], params[1])
+    
+      if args.has_key?('pdf')
+        puts "Start convert PDF for #{crawler.author_name} (#{crawler.author_id})"
 
-    if args.has_key?('pdf')
-      puts "Start convert PDF for #{crawler.author_name} (#{crawler.author_id})"
+        maker = PDFMaker.new
+        maker.author_id = crawler.author_id
+        maker.author_name = crawler.author_name
+        maker.convert_single(params[1])
+      end
+    else
+      # All posts of author_id
+      crawler.fetch(args['f'])
+
+      if args.has_key?('pdf')
+        puts "Start convert PDF for #{crawler.author_name} (#{crawler.author_id})"
       
-      maker = PDFMaker.new
-      maker.author_id = crawler.author_id
-      maker.author_name = crawler.author_name
-      maker.convert
+        maker = PDFMaker.new
+        maker.author_id = crawler.author_id
+        maker.author_name = crawler.author_name
+        maker.convert
+      end
     end
   end
+  
 elsif args.has_key?('z')
   if (args['z'].include? ",")
     cubes_id = args['z'].split(",")
