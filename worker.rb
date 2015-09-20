@@ -7,11 +7,20 @@ args = Hash[ ARGV.flat_map{|s| s.scan(/--?([^=\s]+)(?:=(\S+))?/) } ]
 
 def print_help
   puts "  -h This help info
-  -f= user id
-  -z= cube symbol
-  -c comments
-  -e email
-  -pdf convert to pdf
+  
+  Post
+    -f={user id}
+    -f={user id}/{post id}
+    
+    Save mode:
+      -c with comments
+      -pdf convert to pdf
+    Email mode:
+      -c with comments
+      -e send email
+      
+  Cube
+    -z= cube symbol
   "
 end
 
