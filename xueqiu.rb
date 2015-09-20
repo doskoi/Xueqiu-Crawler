@@ -195,7 +195,8 @@ class XueqiuEngine
                 'count' => 200,
                 'page' => 1}}
     json = JSON.parse response
-    puts "Comments Page 1 of Post #{post_id}"
+    puts "Comments Page 1 of Pages #{maxPage} for Post #{post_id}"
+    
     maxPage = json['maxPage']
     get_comment.call json
     
@@ -209,7 +210,7 @@ class XueqiuEngine
                     'count' => 200,
                     'page' => page}}
         json = JSON.parse response
-        puts "Comments Page #{page} of Pages #{maxPage}"
+        puts "Comments Page #{page} of Pages #{maxPage} for Post #{post_id}"
         get_comment.call json
         sleep 0.1
       end
@@ -233,7 +234,7 @@ class XueqiuEngine
       case response.code
       when 200
         json = JSON.parse response
-        puts "Page 1 of User: #{author_id}"
+        puts "Page 1 of of Pages #{maxPage} for User: #{author_id}"
         maxPage = json['maxPage']
         json['statuses'].each do |post|
           posts.push post['id']
@@ -248,7 +249,7 @@ class XueqiuEngine
                             'page' => page}}
                             
             json = JSON.parse response
-            puts "Page #{page} of Pages #{maxPage}"
+            puts "Page #{page} of Pages #{maxPage} for User: #{author_id}"
             json['statuses'].each do |post|
               posts.push post['id']
             end

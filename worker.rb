@@ -9,6 +9,8 @@ def print_help
   puts "  -h This help info
   
   Post
+    -f fetch user's post
+    usage:
     -f={user id}
     -f={user id}/{post id}
     
@@ -20,7 +22,9 @@ def print_help
       -e send email
       
   Cube
-    -z= cube symbol
+    -z fetch cube
+    usage:
+    -z={cube_symbol}
   "
 end
 
@@ -35,6 +39,7 @@ elsif args.has_key?('f')
     crawler.author_id = (args['f'])
     
     mailer = Mailer.new(crawler)
+    mailer.continues_comments = true if args.has_key?('c')
     mailer.send_latest_post_if_needed
   else
     # normal

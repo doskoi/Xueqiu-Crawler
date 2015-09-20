@@ -17,16 +17,84 @@ class Crawler
     @mail_real_time = false
   end
   
+  # /post/#{author_id}/#{post_id}.html
   def post_path (post_id)
     path = File.expand_path("posts/#{@author_id}", File.dirname(__FILE__))
     FileUtils.mkdir_p path if Dir.exist?(path) == false
     return File.expand_path("#{post_id}.html", path)
   end
   
+  # /post/#{author_id}/#{post_id}/#{post_id}_#{comment_id}.html
+  def comment_path (post_id, comment_id)
+    path = File.expand_path("posts/#{@author_id}/#{post_id}", File.dirname(__FILE__))
+    FileUtils.mkdir_p path if Dir.exist?(path) == false
+    return File.expand_path("#{post_id}_#{comment_id}.html", path)
+  end
+  
+  # /cube/#{cube_id}.html
   def cube_path(cube_id)
     path = File.expand_path("cube", File.dirname(__FILE__))
     FileUtils.mkdir_p path if Dir.exist?(path) == false
     return File.expand_path("#{cube_id}.html", path)
+  end
+  
+  def make_comment_content(comment, all_comments)
+    comments_quote = ""
+    
+    if comment.author_id.to_s == @author_id.to_s
+      @author_name = comment.author_screenname if !@author_name
+      
+      comments_quote << "<a href=\"http://xueqiu.com/#{comment.author_id}\">#{comment.author_screenname}</a>:
+      <div class=\"commnet\">#{comment.text}</div>
+      <span>#{comment.created_at_readable}</span>"
+      if comment.reply_comment_id
+        reply_comment = (all_comments.select {|c| c.id == comment.reply_comment_id}).first
+        if reply_comment
+          comments_quote << "<blockquote><a href=\"http://xueqiu.com/#{reply_comment.author_id}\">#{reply_comment.author_screenname}</a>:
+      <div class=\"commnet\">#{reply_comment.text}</div>
+      <span>#{reply_comment.created_at_readable}</span></blockquote>"
+        end
+      end
+    end
+    
+    return nil if comments_quote.length == 0
+    
+    comment_content = "<html>
+      <head>
+      	<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">
+        	<title></title>
+        	<style type=\"text/css\" media=\"all\">
+        		body {
+        			font-family: \"SimSun\", \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+        			font-size: 18px;
+        		}
+        		H3 {
+        		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+        		    width: 80%;
+        		    line-height: 150%;
+        		}
+        		H4 {
+        		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+        		}
+        		li {
+        		    margin-left: 10px;
+        		}
+        		blockquote {
+        			border-left: 4px lightgrey solid;
+        			padding-left: 5px;
+        			margin-left: 20px;
+        		}
+        		a {
+        			color: #000;
+        		}
+        	</style>
+        </head>
+        <body>
+      <div>#{comments_quote}</div>
+      </body>
+    </html>"
+
+    return comment_content
   end
     
   def make_post_content(post)
@@ -90,67 +158,67 @@ class Crawler
     end
     
     html_content = "<html>
-<head>
-	<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">
-	<title>#{title}</title>
-	<style type=\"text/css\" media=\"all\">
-		body {
-			font-family: \"SimSun\", \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
-			font-size: 18px;
-		}
-		img {
-			max-width: 768px; 
-		}
-		H1 {
-		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
-		}
+    <head>
+    	<meta http-equiv=\"Content-type\" content=\"text/html; charset=utf-8\">
+    	<title>#{title}</title>
+    	<style type=\"text/css\" media=\"all\">
+    		body {
+    			font-family: \"SimSun\", \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    			font-size: 18px;
+    		}
+    		img {
+    			max-width: 768px; 
+    		}
+    		H1 {
+    		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		}
 
-		H2 {
-		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
-		    margin-bottom: 60px;
-		    margin-bottom: 40px;
-		    padding: 5px;
-		    width: 90%;
-		    line-height: 150%;
-		}
+    		H2 {
+    		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		    margin-bottom: 60px;
+    		    margin-bottom: 40px;
+    		    padding: 5px;
+    		    width: 90%;
+    		    line-height: 150%;
+    		}
 
-		H3 {
-		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
-		    width: 80%;
-		    line-height: 150%;
-		}
+    		H3 {
+    		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		    width: 80%;
+    		    line-height: 150%;
+    		}
 
-		H4 {
-		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
-		}
+    		H4 {
+    		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		}
     
-		H5 {
-		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
-		}
+    		H5 {
+    		    font-family: STFangsong, Fangsong, serif, \"Palatino Linotype\", \"Book Antiqua\", Palatino, serif;
+    		}
 
-		li {
-		    margin-left: 10px;
-		}
-		blockquote {
-			border-left: 4px lightgrey solid;
-			padding-left: 5px;
-			margin-left: 20px;
-		}
-		a {
-			color: #000;
-		}
-	</style>
-</head>
-<body>
-	<h2>#{title}</h2>
-	<p>#{content}</p>
-	<blockquote>#{quote_content}</blockquote>
-  <span>#{created_at}</span>
-  <div>#{comments_content}</div>
-	<h4><p><a href=\"http://xueqiu.com/#{author_id}/#{tid}\">原文链接</a></p></h4>
-  <p>#{email_content}</p>
-  </body>
-</html>"
+    		li {
+    		    margin-left: 10px;
+    		}
+    		blockquote {
+    			border-left: 4px lightgrey solid;
+    			padding-left: 5px;
+    			margin-left: 20px;
+    		}
+    		a {
+    			color: #000;
+    		}
+    	</style>
+    </head>
+    <body>
+    	<h2>#{title}</h2>
+    	<p>#{content}</p>
+    	<blockquote>#{quote_content}</blockquote>
+      <span>#{created_at}</span>
+      <div>#{comments_content}</div>
+    	<h4><p><a href=\"http://xueqiu.com/#{author_id}/#{tid}\">原文链接</a></p></h4>
+      <p>#{email_content}</p>
+      </body>
+    </html>"
 
     return html_content
   end
@@ -295,6 +363,40 @@ class Crawler
         end
       end
     end
+  end
+  
+  def fetch_comments(post_id)
+    save_comment = Proc.new do |comment, all_comments|
+      comment_content = make_comment_content(comment, all_comments)
+      
+      if comment_content
+        puts "Save comment #{post_id}_#{comment.id}"
+        File.open(comment_path(post_id, comment.id), 'w') do |f|
+            f.write(comment_content)
+        end
+      else
+        puts "Post #{post_id}_#{comment.id} cannot parese json"
+      end
+    end
+    
+    # Fetch all comments of post id
+    comments_array = @xueqiu.fetch_comments post_id
+    comments_id_array = Array.new
+    
+    comments_array.each do |comment|
+        if comment.author_id.to_s == @author_id.to_s
+          # check comment exist
+          if File.exist?(comment_path(post_id, comment.id))
+            puts "Comment #{post_id}_#{comment.id} are exist"
+          else
+            # not exist
+            save_comment.call(comment, comments_array)
+            comments_id_array.push comment.id.to_s
+          end  
+        end
+    end
+    
+    return comments_id_array
   end
   
   def fetch_lastest_post_id(author_id)

@@ -5,7 +5,7 @@ require_relative 'crawler'
 require 'mail'
 
 class Mailer
-  attr_accessor :author_id, :use_on_hold
+  attr_accessor :author_id, :use_on_hold, :continues_comments
   
   PRODUCTION_ENV = File.expand_path("production", File.dirname(__FILE__))
   QR_CODE_PATH = File.expand_path("qr-code.gif", File.dirname(__FILE__)) 
@@ -27,8 +27,12 @@ class Mailer
     File.expand_path("latest_post", deliverd_path)
   end
   
-  def diliverd_post_path (arg)
-    File.expand_path("#{arg}", deliverd_path)
+  def delivered_post_path (post_id)
+    File.expand_path("#{post_id}", deliverd_path)
+  end
+  
+  def delivered_comment_path (post_id, comment_id)
+    File.expand_path("#{post_id}_#{comment_id}", deliverd_path)
   end
   
   def production?
@@ -48,8 +52,9 @@ class Mailer
       local_latest_id = File.read(checkpoint_path)
     end
     
-    @latest_id = @crawler.fetch_lastest_post_id(@crawler.author_id)
-    if local_latest_id == @latest_id
+    @latest_id = @crawler.fetch_lastest_post_id(@author_id)
+    
+    if local_latest_id.to_s == @latest_id.to_s
       return false
     else
       return true
@@ -58,13 +63,14 @@ class Mailer
   
   def send_latest_post_if_needed
     if new_post_available?
-
-      return if File.exist?(diliverd_post_path(@latest_id))
-
+      puts "fetch new post"
+      # Same post won't deliver again
+      return if File.exist?(delivered_post_path(@latest_id))
+      # fetch the new post
       @crawler.fetch(@author_id, @latest_id)
-      
+      # read saved content
       content = File.read(@crawler.post_path(@latest_id))
-      
+      # send content
       send_content("#{@crawler.author_name} (#{@latest_id})", content)
       
       # save latest id
@@ -72,9 +78,37 @@ class Mailer
           f.write(@latest_id)
       end
       # save post flag
-      File.open(diliverd_post_path(@latest_id), 'w') do |f|
+      File.open(delivered_post_path(@latest_id), 'w') do |f|
           f.write("")
       end
+    else
+      # don't have new post but try to fetch commnets if needs
+      if @continues_comments
+        puts "fetch comments"
+        # get last post id
+        post_id = File.read(checkpoint_path)
+        post_id = @crawler.fetch_lastest_post_id(@crawler.author_id) if post_id == nil
+        # fetch new comments
+        comments_id_array = @crawler.fetch_comments(post_id)
+        
+        content = ""
+        comments_id_array.each do |comment_id|
+          # Same comment won't deliver again
+          next if File.exist?(delivered_comment_path(post_id, comment_id))
+          
+          # read comments
+          content << File.read(@crawler.comment_path(post_id, comment_id))          
+          # save sent comment_id
+          File.open(delivered_comment_path(post_id, comment_id), 'w') do |f|
+              f.write("")
+          end
+        end
+        if content.length > 0
+          content << " <h4><p><a href=\"http://xueqiu.com/#{@author_id}/#{post_id}\">原文链接</a></p></h4>"
+          # send comment
+          send_content("#{@crawler.author_name} 回复在(#{post_id})", content)
+        end
+      end      
     end
   end
   
