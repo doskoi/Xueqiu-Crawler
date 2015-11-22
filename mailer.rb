@@ -15,6 +15,7 @@ class Mailer
     @crawler.mail_mode = true
     @author_id = @crawler.author_id
     @use_on_hold = false
+    @continues_comments = false
   end
   
   def deliverd_path
