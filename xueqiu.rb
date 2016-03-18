@@ -298,7 +298,7 @@ class XueqiuEngine
   
   def fetch_lastest_post_id(author_id)
     begin
-      response = RestClient.get 'https://xueqiu.com/v4/user/show.json',
+      response = RestClient.get 'https://api.xueqiu.com/user/show.json',
                   {:params => {
                       'access_token' => self.token,
                       'id' => author_id}}
