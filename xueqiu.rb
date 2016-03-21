@@ -9,6 +9,8 @@ require_relative 'model/transaction'
 require_relative 'model/user_transaction'
 require_relative 'model/cube'
 
+Encoding.default_external = 'UTF-8'
+
 class XueqiuEngine
   attr_accessor :token
   
