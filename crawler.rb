@@ -366,6 +366,7 @@ class Crawler
   end
   
   def fetch_comments(post_id)
+    puts "fetch comments for #{post_id}"
     save_comment = Proc.new do |comment, all_comments|
       comment_content = make_comment_content(comment, all_comments)
       

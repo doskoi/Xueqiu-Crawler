@@ -84,9 +84,10 @@ class Mailer
           f.write("")
       end
     else
+      puts "no found new post"
       # don't have new post but try to fetch commnets if needs
       if @continues_comments
-        puts "fetch comments"
+        puts "then fetch comments"
         # get last post id
         post_id = File.read(checkpoint_path)
         post_id = @crawler.fetch_lastest_post_id(@crawler.author_id) if post_id == nil
