@@ -18,7 +18,7 @@ def print_help
       -c with comments
       -pdf convert to pdf
     Email mode:
-      -c with comments
+      -ec with continues fetch comments when no new post
       -e send email
       
   Cube
@@ -39,7 +39,7 @@ elsif args.has_key?('f')
     crawler.author_id = (args['f'])
     
     mailer = Mailer.new(crawler)
-    mailer.continues_comments = true if args.has_key?('c')
+    mailer.continues_comments = true if args.has_key?('ec')
     mailer.send_latest_post_if_needed
   else
     # normal
