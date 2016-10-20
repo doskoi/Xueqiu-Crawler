@@ -22,8 +22,8 @@ class XueqiuEngine
     return @token if @token != nil
     begin
       response = RestClient.post 'https://xueqiu.com/provider/oauth/token',
-                                              'client_id' => 'WiCimxpj5H',
-                                              'client_secret' => 'TM69Da3uPkFzIdxpTEm6hp',
+                                              'client_id' => YOUR_CLIENT_ID,
+                                              'client_secret' => YOUR_CLIENT_SECRET,
                                               'grant_type' => 'password'
       case response.code
       when 200
