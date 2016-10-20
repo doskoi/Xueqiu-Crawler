@@ -3,3 +3,5 @@ access_token
 cube
 production
 bin
+.DS_Store
+vendor
