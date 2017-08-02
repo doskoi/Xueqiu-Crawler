@@ -214,7 +214,7 @@ class XueqiuEngine
         json = JSON.parse response
         puts "Comments Page #{page} of Pages #{maxPage} for Post #{post_id}"
         get_comment.call json
-        sleep 0.1
+        sleep 1
       end
     end
     
